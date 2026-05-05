@@ -22,9 +22,7 @@ export default function RoleTabs() {
             >
               <Icon size={16} />
               <span className="hidden sm:inline">{r.title}</span>
-              <span className="sm:hidden">
-                {r.title.split(" ")[0]}
-              </span>
+              <span className="sm:hidden">{r.title.split(" ")[0]}</span>
             </TabsTrigger>
           );
         })}
