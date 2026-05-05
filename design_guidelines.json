@@ -1,0 +1,78 @@
+{
+  "theme": "Light",
+  "archetype": "Archetype 4 (Swiss & High-Contrast) adapted for Government Trust",
+  "colors": {
+    "primary": "#0050A0",
+    "primary_hover": "#003D7A",
+    "background": "#FFFFFF",
+    "surface": "#F8FAFC",
+    "surface_alt": "#F1F5F9",
+    "text_main": "#0F172A",
+    "text_muted": "#475569",
+    "border": "#E2E8F0",
+    "success": "#059669",
+    "warning": "#D97706",
+    "error": "#DC2626",
+    "glass_bg": "rgba(255, 255, 255, 0.8)",
+    "glass_border": "rgba(0, 0, 0, 0.05)"
+  },
+  "typography": {
+    "headings_font": "IBM Plex Sans, sans-serif",
+    "body_font": "Inter, sans-serif",
+    "h1": "text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#0F172A]",
+    "h2": "text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[#0F172A]",
+    "h3": "text-xl sm:text-2xl font-semibold tracking-tight text-[#0F172A]",
+    "h4": "text-lg sm:text-xl font-medium tracking-tight text-[#0F172A]",
+    "body": "text-base leading-relaxed text-[#475569]",
+    "small_label": "text-xs font-semibold uppercase tracking-[0.2em] text-[#64748B]"
+  },
+  "spacing_and_layout": {
+    "general_padding": "p-8 md:p-12 lg:p-16",
+    "container_max_width": "max-w-7xl mx-auto",
+    "grid_dashboard": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "grid_bento": "grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-8",
+    "radius_system": "rounded-lg for standard, rounded-xl for large containers (subtle roundness)"
+  },
+  "components": {
+    "button_primary": "bg-[#0050A0] hover:bg-[#003D7A] text-white px-6 py-3 rounded-lg font-medium transition-colors focus:ring-2 focus:ring-[#0050A0]/50",
+    "button_secondary": "bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#0F172A] px-6 py-3 rounded-lg font-medium transition-colors focus:ring-2 focus:ring-[#E2E8F0]",
+    "card": "bg-white border border-[#E2E8F0] rounded-xl shadow-sm hover:shadow-md transition-shadow",
+    "glass_header": "sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#E2E8F0]/50",
+    "sidebar_nav": "sticky top-24 w-64 flex-shrink-0 hidden lg:block border-r border-[#E2E8F0] h-[calc(100vh-6rem)] overflow-y-auto pr-6"
+  },
+  "features": {
+    "flowchart": "Horizontal or vertical timeline component using flex/grid. Active steps highlighted in primary color (#0050A0). Use icons for each step (Search, AlertTriangle, Send, FileSearch, ShieldCheck).",
+    "tooltips": "Use Radix/Shadcn Tooltip for key terms like 'Неблагоприятное событие', 'Корректирующее действие'. Tooltip content must have high contrast, dark background #0F172A with white text.",
+    "role_based_tabs": "Use Shadcn Tabs to toggle content views. Active tab must clearly indicate the selected role (Производитель / Медицинская организация / Пользователь).",
+    "deadlines_table": "Use Shadcn Table. Color code deadlines: 2 days (Red/Error), 10 days (Yellow/Warning), 30 days (Neutral).",
+    "admin_dashboard": "Use 'Control Room' grid. Key metrics on top (Total incidents, Critical, Resolved). Bar chart or line chart below using Recharts to show incident trends over time."
+  },
+  "image_urls": {
+    "hero_image": {
+      "url": "https://images.unsplash.com/photo-1758691461888-b74515208d7a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwyfHxoZWFsdGhjYXJlJTIwcHJvZmVzc2lvbmFsJTIwZG9jdG9yJTIwbW9kZXJufGVufDB8fHx8MTc3ODAxMTcyOXww&ixlib=rb-4.1.0&q=85",
+      "description": "Doctor typing on computer in office",
+      "category": "hero"
+    },
+    "monitoring_process": {
+      "url": "https://images.unsplash.com/photo-1770221797869-81e508282ac4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwdGVjaG5vbG9neSUyMGxhYm9yYXRvcnl8ZW58MHx8fHwxNzc4MDExNzI4fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Two people working with medical equipment and iv bags",
+      "category": "content_section"
+    },
+    "medical_equipment": {
+      "url": "https://images.unsplash.com/photo-1646956141700-55bd6bc59d95?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHxtZWRpY2FsJTIwZGV2aWNlJTIwZXF1aXBtZW50fGVufDB8fHx8MTc3ODAxMTcyOHww&ixlib=rb-4.1.0&q=85",
+      "description": "Laboratory pipettes ready for use in research",
+      "category": "decorative"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Use Shadcn UI components for Tabs, Table, Tooltip, Form, and Dialog.",
+    "Implement the landing page with a sticky glassmorphism header.",
+    "Use a layout that includes a sticky sidebar for navigation between the content sections (Общие положения, Цели мониторинга, Основные понятия, Участники процесса, Процесс мониторинга, Отчетность, Корректирующие действия, Пострегистрационный мониторинг, Решения уполномоченного органа, Ответственность и санкции).",
+    "In the incident report form, ensure validation is present and all inputs have a 'data-testid' attribute.",
+    "The 5-step process flowchart should be interactive, showing more details when clicking a step. (Steps: Обнаружение события → Классификация → Отправка отчета → Анализ → Принятие решения).",
+    "Use Recharts in the admin dashboard for statistics.",
+    "Ensure high contrast and accessibility. The application must be entirely in Russian.",
+    "Avoid generic 'card' layouts for the main content sections. Use pure HTML + Tailwind for a more editorial, structured document feel, but use Shadcn for interactive pieces.",
+    "MANDATORY: Add 'data-testid' attributes to all interactive and key informational elements (buttons, inputs, tabs, table rows)."
+  ]
+}
