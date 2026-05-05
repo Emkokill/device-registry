@@ -38,19 +38,34 @@ medical devices into a clear, structured, government/healthcare-style website.
   table with severity filter
 - PDF document generation (Cyrillic via DejaVu / Helvetica fallback)
 - Government white/blue palette (#0050A0), IBM Plex Sans + Inter typography
-- All interactive elements tagged with `data-testid`
-- Tested end-to-end via testing agent: 100% backend and frontend pass
+
+## Implemented (2026-02-05 — Iteration 2)
+- **JWT auth** for admin panel: `/admin/login`, ProtectedRoute, bcrypt password
+  hashing, admin seeded from `.env`, 8h token TTL.
+- **Status management**: per-row dropdown (received → in_review → resolved → rejected).
+  Selecting "rejected" opens modal asking for `rejection_reason`.
+- **File attachments** via Emergent Object Storage: drag-drop in form,
+  max 5 files / 10 MB, types pdf/jpg/jpeg/png/docx. Admin can download with
+  authenticated link.
+- **Bilingual UI (RU + KY)**: header `LanguageSwitcher`, full UI string i18n,
+  bilingual content (sections, definitions, role descriptions). Persisted in
+  localStorage key `medsafety_lang`.
+- Testing agent: 100% backend (29/29) and 100% frontend (9/9 critical flows).
 
 ## Backlog
 - P1: Role-based dashboard filters (filter incidents by role of submitter)
 - P1: Email notification on incident submission (Resend / SMTP)
-- P2: Admin authentication (JWT or Emergent Google Auth)
-- P2: Update incident status from admin panel (received → in_review → resolved)
-- P2: File attachments for incidents (object storage)
-- P3: Multi-language toggle (RU / EN / KZ)
+- P1: Date-range filter in admin
+- P2: Per-status filter chips in admin table
+- P2: Admin can add internal comments to an incident
+- P3: Add EN locale alongside RU/KY
 - P3: Export incidents to CSV / XLSX
+- P3: Forgot-password flow for admin
 
 ## Notes
-- Admin route `/admin` is intentionally open (per user choice).
-- All UI strings are in Russian (Cyrillic).
-- No third-party LLM integrations used.
+- New endpoints (auth-protected): `GET /api/incidents`, `GET /api/incidents/stats`,
+  `PATCH /api/incidents/{id}`, `GET /api/files/{file_id}`, `GET /api/auth/me`.
+- Public: `POST /api/incidents` (multipart), `GET /api/document/pdf`, `GET /api/meta`,
+  `POST /api/auth/login`.
+- Admin credentials in `/app/memory/test_credentials.md` and `/app/backend/.env`.
+- Object storage uses `EMERGENT_LLM_KEY` from `.env`.

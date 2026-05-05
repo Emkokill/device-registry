@@ -176,11 +176,11 @@ export default function Admin() {
             </p>
             <p className="text-xs text-[#64748B]">{t("admin.chart.timeline.sub")}</p>
           </div>
-          <div className="h-[260px]">
+          <div className="h-[260px] min-h-[260px]">
             {timelineData.length === 0 ? (
               <Empty msg={t("admin.no_data")} />
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={240}>
                 <LineChart data={timelineData}>
                   <CartesianGrid stroke="#F1F5F9" vertical={false} />
                   <XAxis dataKey="date" tick={{ fill: "#64748B", fontSize: 12 }} stroke="#CBD5E1" />
@@ -197,11 +197,11 @@ export default function Admin() {
           <p className="text-sm font-semibold text-[#0F172A] font-heading mb-4">
             {t("admin.chart.severity")}
           </p>
-          <div className="h-[260px]">
+          <div className="h-[260px] min-h-[260px]">
             {total === 0 ? (
               <Empty msg={t("admin.no_data")} />
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={240}>
                 <BarChart data={bySeverityData} layout="vertical">
                   <CartesianGrid stroke="#F1F5F9" horizontal={false} />
                   <XAxis type="number" tick={{ fill: "#64748B", fontSize: 12 }} stroke="#CBD5E1" allowDecimals={false} />
