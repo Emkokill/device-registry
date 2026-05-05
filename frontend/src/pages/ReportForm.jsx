@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
@@ -18,15 +18,42 @@ import {
   Send,
   Calendar as CalendarIcon,
   Loader2,
+  Upload,
+  X,
+  FileText,
+  FileImage,
+  File as FileIcon,
 } from "lucide-react";
+import { useT, useLang } from "@/lib/i18n";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const MAX_FILES = 5;
+const MAX_SIZE = 10 * 1024 * 1024;
+const ALLOWED_EXT = ["pdf", "jpg", "jpeg", "png", "docx"];
+
+function fileIcon(name) {
+  const ext = (name.split(".").pop() || "").toLowerCase();
+  if (["jpg", "jpeg", "png"].includes(ext)) return FileImage;
+  if (ext === "pdf") return FileText;
+  return FileIcon;
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+}
 
 export default function ReportForm() {
   const navigate = useNavigate();
+  const t = useT();
+  const { lang } = useLang();
+  const fileInputRef = useRef(null);
   const [meta, setMeta] = useState({ event_types: [], roles: [] });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [dragOver, setDragOver] = useState(false);
   const [form, setForm] = useState({
     email: "",
     event_type: "",
@@ -39,10 +66,7 @@ export default function ReportForm() {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    axios
-      .get(`${API}/meta`)
-      .then((r) => setMeta(r.data))
-      .catch(() => {});
+    axios.get(`${API}/meta`).then((r) => setMeta(r.data)).catch(() => {});
   }, []);
 
   const update = (k, v) => {
@@ -50,14 +74,40 @@ export default function ReportForm() {
     setErrors((e) => ({ ...e, [k]: undefined }));
   };
 
+  const addFiles = (incoming) => {
+    const arr = Array.from(incoming || []);
+    const next = [...files];
+    for (const f of arr) {
+      if (next.length >= MAX_FILES) {
+        toast.error(t("form.error.too_many_files"));
+        break;
+      }
+      const ext = (f.name.split(".").pop() || "").toLowerCase();
+      if (!ALLOWED_EXT.includes(ext)) {
+        toast.error(`${t("form.error.file_type")}: ${f.name}`);
+        continue;
+      }
+      if (f.size > MAX_SIZE) {
+        toast.error(`${t("form.error.file_size")}: ${f.name}`);
+        continue;
+      }
+      next.push(f);
+    }
+    setFiles(next);
+  };
+
+  const removeFile = (idx) => {
+    setFiles((f) => f.filter((_, i) => i !== idx));
+  };
+
   const validate = () => {
     const e = {};
     if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email))
-      e.email = "Укажите корректный email";
-    if (!form.event_type) e.event_type = "Выберите тип события";
+      e.email = t("form.error.email");
+    if (!form.event_type) e.event_type = t("form.error.event_type");
     if (!form.description || form.description.trim().length < 10)
-      e.description = "Описание должно содержать минимум 10 символов";
-    if (!form.incident_date) e.incident_date = "Укажите дату";
+      e.description = t("form.error.description");
+    if (!form.incident_date) e.incident_date = t("form.error.date");
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -65,19 +115,25 @@ export default function ReportForm() {
   const submit = async (ev) => {
     ev.preventDefault();
     if (!validate()) {
-      toast.error("Проверьте заполнение полей формы");
+      toast.error(t("form.error.invalid"));
       return;
     }
     setSubmitting(true);
     try {
-      const res = await axios.post(`${API}/incidents`, form);
+      const fd = new FormData();
+      fd.append("payload", JSON.stringify(form));
+      for (const f of files) fd.append("files", f);
+      const res = await axios.post(`${API}/incidents`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setSuccess(res.data);
-      toast.success("Отчёт принят. Спасибо за вашу бдительность.");
+      toast.success(t("form.success.toast"));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const msg =
-        err?.response?.data?.detail || "Не удалось отправить отчёт. Попробуйте снова.";
-      toast.error(msg);
+        err?.response?.data?.detail ||
+        "Не удалось отправить отчёт. Попробуйте снова.";
+      toast.error(typeof msg === "string" ? msg : "Ошибка отправки");
     } finally {
       setSubmitting(false);
     }
@@ -85,41 +141,35 @@ export default function ReportForm() {
 
   if (success) {
     return (
-      <div
-        className="max-w-3xl mx-auto px-5 lg:px-8 py-16 lg:py-24"
-        data-testid="report-success"
-      >
+      <div className="max-w-3xl mx-auto px-5 lg:px-8 py-16 lg:py-24" data-testid="report-success">
         <div className="border border-[#E2E8F0] rounded-2xl bg-white p-8 lg:p-12">
           <span className="w-14 h-14 rounded-xl bg-[#DCFCE7] text-[#059669] flex items-center justify-center">
             <CheckCircle2 size={28} />
           </span>
           <h1 className="mt-5 text-3xl font-semibold text-[#0F172A] font-heading tracking-tight">
-            Отчёт принят
+            {t("form.success.title")}
           </h1>
           <p className="mt-3 text-[15px] text-[#475569] leading-relaxed">
-            Ваше сообщение зарегистрировано в системе мониторинга. Уполномоченный орган и производитель получат уведомление и проведут анализ.
+            {t("form.success.lead")}
           </p>
           <div className="mt-6 grid sm:grid-cols-2 gap-4">
             <div className="border border-[#E2E8F0] rounded-lg p-4">
               <p className="text-xs uppercase tracking-[0.2em] text-[#64748B] font-semibold">
-                Номер обращения
+                {t("form.success.id")}
               </p>
-              <p
-                className="mt-1 text-sm font-mono text-[#0F172A] break-all"
-                data-testid="success-report-id"
-              >
+              <p className="mt-1 text-sm font-mono text-[#0F172A] break-all" data-testid="success-report-id">
                 {success.id}
               </p>
             </div>
             <div className="border border-[#E2E8F0] rounded-lg p-4">
               <p className="text-xs uppercase tracking-[0.2em] text-[#64748B] font-semibold">
-                Категория
+                {t("form.success.cat")}
               </p>
               <p className="mt-1 text-sm font-semibold text-[#0F172A]">
                 {success.event_type_label}
               </p>
               <p className="text-xs text-[#475569] mt-1">
-                Уровень: {success.severity === "critical" ? "критический" : success.severity === "serious" ? "серьёзный" : "стандартный"}
+                {t("form.success.level")}: {t(`sev.${success.severity}`)}
               </p>
             </div>
           </div>
@@ -128,6 +178,7 @@ export default function ReportForm() {
               type="button"
               onClick={() => {
                 setSuccess(null);
+                setFiles([]);
                 setForm((f) => ({
                   ...f,
                   description: "",
@@ -139,7 +190,7 @@ export default function ReportForm() {
               className="bg-[#0050A0] hover:bg-[#003D7A] text-white px-5 py-2.5 rounded-lg font-medium text-sm"
               data-testid="success-new-report"
             >
-              Подать ещё одно сообщение
+              {t("form.success.new")}
             </button>
             <button
               type="button"
@@ -147,7 +198,7 @@ export default function ReportForm() {
               className="bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] px-5 py-2.5 rounded-lg font-medium text-sm"
               data-testid="success-home"
             >
-              Вернуться на главную
+              {t("form.success.home")}
             </button>
           </div>
         </div>
@@ -163,13 +214,13 @@ export default function ReportForm() {
         </span>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-[#0050A0] font-semibold">
-            Форма
+            {t("form.kicker")}
           </p>
           <h1 className="mt-1 text-3xl lg:text-4xl font-semibold text-[#0F172A] font-heading tracking-tight">
-            Сообщить об инциденте
+            {t("form.title")}
           </h1>
           <p className="mt-3 text-[15px] text-[#475569] leading-relaxed max-w-2xl">
-            Заполните форму как можно подробнее. От тяжести события зависит срок реагирования: 2, 10 или 30 дней.
+            {t("form.lead")}
           </p>
         </div>
       </div>
@@ -182,12 +233,12 @@ export default function ReportForm() {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <Label htmlFor="email" className="text-sm font-medium text-[#0F172A]">
-              Email <span className="text-[#DC2626]">*</span>
+              {t("form.email")} <span className="text-[#DC2626]">*</span>
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="example@domain.ru"
+              placeholder={t("form.email.ph")}
               value={form.email}
               onChange={(e) => update("email", e.target.value)}
               className="mt-1.5"
@@ -201,24 +252,15 @@ export default function ReportForm() {
           </div>
 
           <div>
-            <Label className="text-sm font-medium text-[#0F172A]">
-              Я выступаю как
-            </Label>
-            <Select
-              value={form.role}
-              onValueChange={(v) => update("role", v)}
-            >
+            <Label className="text-sm font-medium text-[#0F172A]">{t("form.role")}</Label>
+            <Select value={form.role} onValueChange={(v) => update("role", v)}>
               <SelectTrigger className="mt-1.5" data-testid="select-role">
-                <SelectValue placeholder="Выберите роль" />
+                <SelectValue placeholder={t("form.role.ph")} />
               </SelectTrigger>
               <SelectContent>
                 {meta.roles.map((r) => (
-                  <SelectItem
-                    key={r.value}
-                    value={r.value}
-                    data-testid={`select-role-${r.value}`}
-                  >
-                    {r.label}
+                  <SelectItem key={r.value} value={r.value} data-testid={`select-role-${r.value}`}>
+                    {lang === "ky" ? r.label_ky || r.label : r.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -229,32 +271,22 @@ export default function ReportForm() {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <Label className="text-sm font-medium text-[#0F172A]">
-              Тип события <span className="text-[#DC2626]">*</span>
+              {t("form.event_type")} <span className="text-[#DC2626]">*</span>
             </Label>
-            <Select
-              value={form.event_type}
-              onValueChange={(v) => update("event_type", v)}
-            >
+            <Select value={form.event_type} onValueChange={(v) => update("event_type", v)}>
               <SelectTrigger className="mt-1.5" data-testid="select-event-type">
-                <SelectValue placeholder="Выберите тип" />
+                <SelectValue placeholder={t("form.event_type.ph")} />
               </SelectTrigger>
               <SelectContent>
-                {meta.event_types.map((t) => (
-                  <SelectItem
-                    key={t.value}
-                    value={t.value}
-                    data-testid={`select-event-${t.value}`}
-                  >
-                    {t.label}
+                {meta.event_types.map((tp) => (
+                  <SelectItem key={tp.value} value={tp.value} data-testid={`select-event-${tp.value}`}>
+                    {lang === "ky" ? tp.label_ky || tp.label : tp.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {errors.event_type && (
-              <p
-                className="text-xs text-[#DC2626] mt-1"
-                data-testid="error-event-type"
-              >
+              <p className="text-xs text-[#DC2626] mt-1" data-testid="error-event-type">
                 {errors.event_type}
               </p>
             )}
@@ -262,7 +294,7 @@ export default function ReportForm() {
 
           <div>
             <Label htmlFor="incident_date" className="text-sm font-medium text-[#0F172A]">
-              Дата события <span className="text-[#DC2626]">*</span>
+              {t("form.date")} <span className="text-[#DC2626]">*</span>
             </Label>
             <div className="relative mt-1.5">
               <Input
@@ -290,11 +322,11 @@ export default function ReportForm() {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <Label htmlFor="device_name" className="text-sm font-medium text-[#0F172A]">
-              Наименование изделия
+              {t("form.device")}
             </Label>
             <Input
               id="device_name"
-              placeholder="Напр. инфузионный насос XYZ-200"
+              placeholder={t("form.device.ph")}
               value={form.device_name}
               onChange={(e) => update("device_name", e.target.value)}
               className="mt-1.5"
@@ -303,11 +335,11 @@ export default function ReportForm() {
           </div>
           <div>
             <Label htmlFor="organization" className="text-sm font-medium text-[#0F172A]">
-              Организация
+              {t("form.org")}
             </Label>
             <Input
               id="organization"
-              placeholder="Название мед. организации (если применимо)"
+              placeholder={t("form.org.ph")}
               value={form.organization}
               onChange={(e) => update("organization", e.target.value)}
               className="mt-1.5"
@@ -318,12 +350,12 @@ export default function ReportForm() {
 
         <div>
           <Label htmlFor="description" className="text-sm font-medium text-[#0F172A]">
-            Описание события <span className="text-[#DC2626]">*</span>
+            {t("form.description")} <span className="text-[#DC2626]">*</span>
           </Label>
           <Textarea
             id="description"
             rows={6}
-            placeholder="Подробно опишите обстоятельства, симптомы, действия персонала, последствия для пациента и любые иные значимые детали."
+            placeholder={t("form.description.ph")}
             value={form.description}
             onChange={(e) => update("description", e.target.value)}
             className="mt-1.5"
@@ -335,18 +367,89 @@ export default function ReportForm() {
                 {errors.description}
               </p>
             ) : (
-              <span className="text-xs text-[#64748B]">Минимум 10 символов</span>
+              <span className="text-xs text-[#64748B]">{t("form.description.min")}</span>
             )}
-            <span className="text-xs text-[#64748B]">
-              {form.description.length} / 5000
-            </span>
+            <span className="text-xs text-[#64748B]">{form.description.length} / 5000</span>
           </div>
         </div>
 
+        {/* File upload */}
+        <div>
+          <Label className="text-sm font-medium text-[#0F172A]">{t("form.files")}</Label>
+          <p className="text-xs text-[#64748B] mt-1">{t("form.files.hint")}</p>
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              addFiles(e.dataTransfer.files);
+            }}
+            className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+              dragOver
+                ? "border-[#0050A0] bg-[#E8F0FB]/40"
+                : "border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#94A3B8]"
+            }`}
+            onClick={() => fileInputRef.current?.click()}
+            data-testid="file-dropzone"
+          >
+            <Upload size={20} className="text-[#0050A0] mx-auto mb-2" />
+            <p className="text-sm text-[#475569]">
+              {t("form.files.drop")}{" "}
+              <span className="text-[#0050A0] font-semibold">{t("form.files.browse")}</span>
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.jpg,.jpeg,.png,.docx"
+              className="hidden"
+              onChange={(e) => {
+                addFiles(e.target.files);
+                e.target.value = "";
+              }}
+              data-testid="file-input"
+            />
+          </div>
+
+          {files.length > 0 && (
+            <ul className="mt-3 space-y-2" data-testid="file-list">
+              {files.map((f, idx) => {
+                const Icon = fileIcon(f.name);
+                return (
+                  <li
+                    key={idx}
+                    className="flex items-center gap-3 border border-[#E2E8F0] rounded-lg px-3 py-2 bg-white"
+                    data-testid={`file-item-${idx}`}
+                  >
+                    <span className="w-9 h-9 rounded-md bg-[#E8F0FB] text-[#0050A0] flex items-center justify-center flex-shrink-0">
+                      <Icon size={16} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#0F172A] truncate">{f.name}</p>
+                      <p className="text-xs text-[#64748B]">{formatSize(f.size)}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="p-1.5 rounded-md hover:bg-[#FEF2F2] text-[#DC2626]"
+                      title={t("form.files.remove")}
+                      data-testid={`file-remove-${idx}`}
+                    >
+                      <X size={16} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
         <div className="border-t border-[#E2E8F0] pt-5 flex items-center justify-between flex-wrap gap-3">
-          <p className="text-xs text-[#475569] max-w-md">
-            Отправляя форму, вы подтверждаете достоверность сведений. Ложные сообщения преследуются по закону.
-          </p>
+          <p className="text-xs text-[#475569] max-w-md">{t("form.disclaimer")}</p>
           <button
             type="submit"
             disabled={submitting}
@@ -355,11 +458,11 @@ export default function ReportForm() {
           >
             {submitting ? (
               <>
-                <Loader2 size={16} className="animate-spin" /> Отправка...
+                <Loader2 size={16} className="animate-spin" /> {t("form.submitting")}
               </>
             ) : (
               <>
-                <Send size={16} /> Отправить отчёт
+                <Send size={16} /> {t("form.submit")}
               </>
             )}
           </button>

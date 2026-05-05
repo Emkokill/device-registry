@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration 2 e2e testing complete. Backend: 29/29 pytest cases pass covering auth (login OK / wrong password 401 / /me with+without token / invalid token), meta, multipart incident creation w/ severity classification, validation (400 for bad email/event/short desc), file upload via Emergent object storage (PNG round-tripped), disallowed extension rejected (400), auth-required list/stats (401 anon / 200 with Bearer), PATCH status (in_review, rejected w/ reason, rejected default 'Без указания причины', invalid status 400, unknown id 404), file download via Bearer header AND ?auth= query param, anonymous download 401, PDF still works. Frontend (Playwright on REACT_APP_BACKEND_URL): /admin redirects anon to /admin/login; wrong creds shows error toast/banner; valid login navigates to /admin and persists token under medsafety_token; admin shows logged-as email + 11 incidents + KPIs; language switcher writes medsafety_lang and translates UI to KY then back to RU; status select updates row to in_review then opening 'rejected' triggers reject modal, confirming with reason persists rejection_reason rendered in row; logout button clears token; report form drag-drop file upload accepts a real PNG, multipart submit succeeds and success screen renders incident id. Zero JS console errors (only benign recharts width-warnings on first paint).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin charts", "issues": ["Recharts emits 'width(-1)/height(-1)' console warnings on first paint (container measured before layout). Cosmetic; charts render correctly after mount. Could be silenced with explicit min-height or aspect ratio on the ResponsiveContainer wrapper."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_backend.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Optional: silence recharts width(-1)/height(-1) warnings by adding min-height on ResponsiveContainer wrappers in Admin.jsx."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now ~660 LOC — still single-file but readable. If iteration 3 grows it, consider splitting into routers/auth.py, routers/incidents.py, services/storage.py.",
+    "JWT secret is read from .env (good). Token TTL is 8h — reasonable for an admin panel.",
+    "get_current_admin enforces role=='admin' AND type=='access' — solid. Wrong password and unknown user both return generic 401 — no user enumeration leak.",
+    "File download endpoint accepts token via Bearer OR ?auth= query param (needed so <a href> works). Token is still validated server-side. Acceptable trade-off; document that copying download URLs is equivalent to sharing the JWT.",
+    "Object storage init is lazy + auto-retries once on 403 (re-init) — robust against key rotation.",
+    "POST /api/incidents validates extension server-side (ALLOWED_EXT) and size (MAX_FILE_SIZE). Frontend mirrors the same constants. Good defense-in-depth.",
+    "MongoDB _id is excluded from every response via projection {'_id': 0} — verified in tests.",
+    "seed_admin updates password if the .env value differs from the stored hash (idempotent and safe). bcrypt hashes use $2b$ format.",
+    "Pydantic EmailStr on LoginRequest gives 422; manual email check on incident POST returns 400 (consistent with iteration 1)."
+  ],
+  "updated_files": ["/app/backend/tests/test_backend.py"],
+  "success_rate": {"backend": "100% (29/29)", "frontend": "100% (9/9 critical flows)"},
+  "test_credentials": "admin@medsafety.gov / MedSafety2026! (also in /app/memory/test_credentials.md)",
+  "seed_data_creation": "Tests created ~6 incidents with TEST_ email prefixes (TEST_critical, TEST_serious, TEST_std, TEST_files, TEST_ui). One row was patched to status=rejected with reason 'TEST_reject_via_ui'. Safe to leave or purge from db.incidents.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Pytest at /app/backend/tests/test_backend.py is the regression suite — pulls REACT_APP_BACKEND_URL from env (no hardcoded URL). Test data is prefixed with TEST_ in email field. Frontend testids verified working: login-page, login-email/password/submit/error, admin-page, admin-logged-as, header-logout, lang-switcher-trigger, lang-option-{ru|ky}, kpi-{total|critical|serious|standard}, status-select-{id}, status-option-{id}-{status}, reject-modal, reject-reason-input, reject-confirm/cancel, reject-reason-{id}, file-link-{att_id}, file-dropzone, file-input, file-item-{idx}, file-remove-{idx}, submit-report, report-success, success-report-id. Token in localStorage key 'medsafety_token', language in 'medsafety_lang'.",
+  "rca of the issue": "No bugs found in iteration 2 scope."
+}

@@ -10,33 +10,32 @@ import {
   Stethoscope,
 } from "lucide-react";
 import DeadlinesTable from "@/components/DeadlinesTable";
+import { useT } from "@/lib/i18n";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1758691461888-b74515208d7a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwyfHxoZWFsdGhjYXJlJTIwcHJvZmVzc2lvbmFsJTIwZG9jdG9yJTIwbW9kZXJufGVufDB8fHx8MTc3ODAxMTcyOXww&ixlib=rb-4.1.0&q=85";
 
 export default function Home() {
+  const t = useT();
   return (
     <div data-testid="home-page">
-      {/* HERO */}
       <section className="relative overflow-hidden border-b border-[#E2E8F0]">
         <div className="absolute inset-0 dotted-bg opacity-50 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-5 lg:px-8 pt-14 pb-16 lg:pt-20 lg:pb-24 grid lg:grid-cols-12 gap-10 relative">
           <div className="lg:col-span-7 flex flex-col">
             <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-full border border-[#E2E8F0] bg-white text-xs font-medium text-[#0050A0]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#0050A0]" />
-              Официальный регламент · Минздрав
+              {t("home.badge")}
             </div>
             <h1
               className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#0F172A] font-heading leading-[1.05]"
               data-testid="hero-title"
             >
-              Мониторинг безопасности{" "}
-              <span className="text-[#0050A0]">медицинских изделий</span>
+              {t("home.title.a")}{" "}
+              <span className="text-[#0050A0]">{t("home.title.b")}</span>
             </h1>
             <p className="mt-5 text-base lg:text-lg text-[#475569] leading-relaxed max-w-xl">
-              Единый портал участников обращения медицинских изделий: понятный
-              регламент, чёткие сроки, инструменты для сообщений о
-              неблагоприятных событиях и аналитика для уполномоченного органа.
+              {t("home.lead")}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3" data-testid="hero-cta">
@@ -46,7 +45,7 @@ export default function Home() {
                 data-testid="cta-report"
               >
                 <AlertOctagon size={17} />
-                Сообщить об инциденте
+                {t("home.cta.report")}
                 <ArrowRight size={15} />
               </Link>
               <Link
@@ -55,7 +54,7 @@ export default function Home() {
                 data-testid="cta-document"
               >
                 <BookOpen size={17} />
-                Изучить порядок
+                {t("home.cta.document")}
               </Link>
               <Link
                 to="/admin"
@@ -63,23 +62,21 @@ export default function Home() {
                 data-testid="cta-reports"
               >
                 <BarChart3 size={17} />
-                Отчёты и требования
+                {t("home.cta.reports")}
               </Link>
             </div>
 
             <dl className="mt-10 grid grid-cols-3 gap-6 max-w-lg">
               {[
-                { v: "2 дня", l: "Срок при угрозе жизни" },
-                { v: "10 дней", l: "Серьёзный вред" },
-                { v: "30 дней", l: "Прочие события" },
+                { v: "2", l: t("home.stat.2") },
+                { v: "10", l: t("home.stat.10") },
+                { v: "30", l: t("home.stat.30") },
               ].map((s, i) => (
                 <div key={i} data-testid={`hero-stat-${i}`}>
                   <dt className="text-2xl lg:text-3xl font-bold text-[#0050A0] font-heading">
                     {s.v}
                   </dt>
-                  <dd className="text-xs text-[#475569] mt-1 leading-snug">
-                    {s.l}
-                  </dd>
+                  <dd className="text-xs text-[#475569] mt-1 leading-snug">{s.l}</dd>
                 </div>
               ))}
             </dl>
@@ -89,7 +86,7 @@ export default function Home() {
             <div className="relative rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-sm bg-white">
               <img
                 src={HERO_IMAGE}
-                alt="Медицинский специалист"
+                alt="Healthcare professional"
                 className="w-full h-[420px] object-cover"
                 data-testid="hero-image"
               />
@@ -101,10 +98,10 @@ export default function Home() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-[#0F172A]">
-                      Защита пациентов — приоритет
+                      {t("home.hero.card.title")}
                     </p>
                     <p className="text-xs text-[#475569] mt-0.5 leading-relaxed">
-                      Своевременное информирование снижает риски и спасает жизни.
+                      {t("home.hero.card.desc")}
                     </p>
                   </div>
                 </div>
@@ -114,44 +111,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PILLARS */}
       <section className="max-w-7xl mx-auto px-5 lg:px-8 py-16 lg:py-20">
         <div className="grid lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4">
             <p className="text-xs uppercase tracking-[0.2em] text-[#64748B] font-semibold">
-              Зачем это нужно
+              {t("home.pillars.kicker")}
             </p>
             <h2 className="mt-3 text-3xl lg:text-4xl font-semibold tracking-tight text-[#0F172A] font-heading">
-              Прозрачная система. Чёткие правила. Безопасные пациенты.
+              {t("home.pillars.title")}
             </h2>
             <p className="mt-4 text-[15px] leading-relaxed text-[#475569]">
-              Регламент устанавливает единые требования к мониторингу
-              медицинских изделий после регистрации — от выявления события до
-              решения уполномоченного органа.
+              {t("home.pillars.lead")}
             </p>
           </div>
           <div className="lg:col-span-8 grid sm:grid-cols-2 gap-4">
             {[
-              {
-                icon: Stethoscope,
-                t: "Раннее выявление",
-                d: "Сбор сообщений от пользователей, медорганизаций и производителей.",
-              },
-              {
-                icon: ShieldCheck,
-                t: "Управление риском",
-                d: "Классификация по тяжести и оценка влияния на пациента.",
-              },
-              {
-                icon: Clock,
-                t: "Сроки и дисциплина",
-                d: "Жёстко регламентированные дедлайны: 2 / 10 / 30 дней.",
-              },
-              {
-                icon: CheckCircle2,
-                t: "Корректирующие меры",
-                d: "Отзыв, доработка, обновление инструкций — до полного устранения риска.",
-              },
+              { icon: Stethoscope, n: 1 },
+              { icon: ShieldCheck, n: 2 },
+              { icon: Clock, n: 3 },
+              { icon: CheckCircle2, n: 4 },
             ].map((p, i) => {
               const Icon = p.icon;
               return (
@@ -164,10 +142,10 @@ export default function Home() {
                     <Icon size={20} />
                   </span>
                   <p className="text-[15px] font-semibold text-[#0F172A] font-heading">
-                    {p.t}
+                    {t(`home.pillar.${p.n}.t`)}
                   </p>
                   <p className="text-sm text-[#475569] mt-1.5 leading-relaxed">
-                    {p.d}
+                    {t(`home.pillar.${p.n}.d`)}
                   </p>
                 </div>
               );
@@ -176,16 +154,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* DEADLINES */}
       <section className="bg-[#F8FAFC] border-y border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto px-5 lg:px-8 py-16 lg:py-20">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-[#64748B] font-semibold">
-                Ключевые сроки
+                {t("home.deadlines.kicker")}
               </p>
               <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-[#0F172A] font-heading">
-                Когда направлять отчёт
+                {t("home.deadlines.title")}
               </h2>
             </div>
             <Link
@@ -193,22 +170,21 @@ export default function Home() {
               className="inline-flex items-center gap-1.5 text-sm font-medium text-[#0050A0] hover:text-[#003D7A]"
               data-testid="link-deadlines-detail"
             >
-              Подробнее в регламенте <ArrowRight size={15} />
+              {t("home.deadlines.more")} <ArrowRight size={15} />
             </Link>
           </div>
           <DeadlinesTable />
         </div>
       </section>
 
-      {/* CTA strip */}
       <section className="max-w-7xl mx-auto px-5 lg:px-8 py-16 lg:py-20">
         <div className="rounded-2xl border border-[#E2E8F0] bg-gradient-to-br from-[#0050A0] to-[#003D7A] text-white p-8 lg:p-12 grid lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-8">
             <p className="text-xs uppercase tracking-[0.2em] text-white/70 font-semibold">
-              Выявили инцидент?
+              {t("home.bottom.kicker")}
             </p>
             <h3 className="mt-2 text-2xl lg:text-3xl font-semibold font-heading leading-tight">
-              Не откладывайте — сообщите сейчас. Это занимает несколько минут и помогает спасать жизни.
+              {t("home.bottom.title")}
             </h3>
           </div>
           <div className="lg:col-span-4 flex lg:justify-end">
@@ -217,7 +193,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 bg-white text-[#0050A0] hover:bg-[#F8FAFC] px-5 py-3 rounded-lg font-medium text-sm"
               data-testid="cta-bottom-report"
             >
-              <AlertOctagon size={17} /> Сообщить об инциденте <ArrowRight size={15} />
+              <AlertOctagon size={17} /> {t("home.cta.report")} <ArrowRight size={15} />
             </Link>
           </div>
         </div>

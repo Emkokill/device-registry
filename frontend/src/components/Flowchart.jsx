@@ -1,10 +1,19 @@
 import { useState } from "react";
-import { Search, AlertTriangle, Send, FileSearch, ShieldCheck, ChevronRight } from "lucide-react";
+import {
+  Search,
+  AlertTriangle,
+  Send,
+  FileSearch,
+  ShieldCheck,
+  ChevronRight,
+} from "lucide-react";
 import { FLOW_STEPS } from "@/lib/content";
+import { useT } from "@/lib/i18n";
 
 const ICONS = { Search, AlertTriangle, Send, FileSearch, ShieldCheck };
 
 export default function Flowchart() {
+  const t = useT();
   const [active, setActive] = useState(1);
   const current = FLOW_STEPS.find((s) => s.n === active) || FLOW_STEPS[0];
 
@@ -39,11 +48,11 @@ export default function Flowchart() {
                       isActive ? "text-white/80" : "text-[#64748B]"
                     }`}
                   >
-                    Шаг {s.n}
+                    {t("flow.step")} {s.n}
                   </span>
                 </div>
                 <span className="text-sm font-semibold font-heading leading-tight">
-                  {s.title}
+                  {t(`flow.${s.n}.title`)}
                 </span>
               </button>
             );
@@ -51,7 +60,6 @@ export default function Flowchart() {
         </div>
       </div>
 
-      {/* Mobile vertical */}
       <div className="md:hidden space-y-2">
         {FLOW_STEPS.map((s) => {
           const Icon = ICONS[s.icon];
@@ -76,9 +84,9 @@ export default function Flowchart() {
               </span>
               <div className="flex-1 text-left">
                 <p className="text-[11px] uppercase tracking-wide opacity-70 font-semibold">
-                  Шаг {s.n}
+                  {t("flow.step")} {s.n}
                 </p>
-                <p className="text-sm font-semibold">{s.title}</p>
+                <p className="text-sm font-semibold">{t(`flow.${s.n}.title`)}</p>
               </div>
               <ChevronRight size={18} className="opacity-60" />
             </button>
@@ -99,13 +107,13 @@ export default function Flowchart() {
           </span>
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-[#0050A0] font-semibold">
-              Этап {current.n} из 5
+              {t("flow.stage")} {current.n} {t("flow.of")} 5
             </p>
             <h4 className="text-xl font-semibold font-heading mt-0.5 mb-2 text-[#0F172A]">
-              {current.title}
+              {t(`flow.${current.n}.title`)}
             </h4>
             <p className="text-[15px] leading-relaxed text-[#475569]">
-              {current.desc}
+              {t(`flow.${current.n}.desc`)}
             </p>
           </div>
         </div>
